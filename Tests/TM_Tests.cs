@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,20 @@ namespace TurnUpPortal_May2024.Tests
     internal class TM_Tests
     {
         IWebDriver driver;
+        WebDriverWait wait;
+
+        [SetUp]
         public void setUp()
         {
+            // Prerequisites
             driver = new ChromeDriver();
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            // Implicit Wait
+            // driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
             driver.Manage().Window.Maximize();
             driver.Navigate().GoToUrl("http://horse.industryconnect.io/Account/Login?ReturnUrl=%2f");
+            loginPage();
+            homePage();
         }
 
         public void loginPage()
@@ -32,34 +42,83 @@ namespace TurnUpPortal_May2024.Tests
             driver.FindElement(By.XPath("/html/body/div[3]/div/div/ul/li[5]/ul/li[3]/a")).Click();
         }
 
+        [TearDown]
         public void tearDown()
         {
             driver.Quit();
         }
 
-        [Test]
+        [Test, Order(1)]
         public void createTMRecordTest()
         {
-            setUp();
-            loginPage();
-            homePage();
-
+            // Actions
             driver.FindElement(By.XPath("//*[@id=\"container\"]/p/a")).Click();
             driver.FindElement(By.XPath("//*[@id=\"TimeMaterialEditForm\"]/div/div[1]/div/span[1]/span/span[2]/span")).Click();
             driver.FindElement(By.XPath("//*[@id=\"TypeCode_listbox\"]/li[2]")).Click();
-            driver.FindElement(By.Id("Code")).SendKeys("ABC");
-            driver.FindElement(By.Id("Description")).SendKeys("XYZ");
+            driver.FindElement(By.Id("Code")).SendKeys("MAY2024");
+            driver.FindElement(By.Id("Description")).SendKeys("Test Analyst");
             driver.FindElement(By.XPath("//*[@id=\"TimeMaterialEditForm\"]/div/div[4]/div/span[1]/span/input[1]")).Click();
             driver.FindElement(By.Id("Price")).SendKeys("100");
             driver.FindElement(By.Id("SaveButton")).Click();
 
-            tearDown();
+            // Assertion
+            // Thread.Sleep(3000);
+            //wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")));
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
+            String code = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[1]")).Text;
+            String typeCode = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[2]")).Text;
+            String description = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[3]")).Text;
+            String price = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[4]")).Text;
+
+            Assert.That(code == "MAY2024", "Code value does not match");
+            Assert.That(typeCode == "T", "TypeCode value does not match");
+            Assert.That(description == "Test Analyst", "Description value does not match");
+            Assert.That(price.Contains("100"), "Price value does not match");
+
         }
 
-        [Test]
-        public void editTMRecordTest() { }
+        [Test, Order(2)]
+        public void editTMRecordTest() {
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[5]/a[1]")).Click();
+            driver.FindElement(By.Id("Code")).SendKeys("JUNE2024");
+            driver.FindElement(By.Id("Description")).SendKeys("Business Analyst");
+            driver.FindElement(By.XPath("//*[@id=\"TimeMaterialEditForm\"]/div/div[4]/div/span[1]/span/input[1]")).Click();
+            driver.FindElement(By.Id("Price")).SendKeys("200");
+            driver.FindElement(By.Id("SaveButton")).Click();
 
-        [Test]
-        public void deleteTMRecordTest() { }
+            // Assertion
+            // Thread.Sleep(3000);
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
+            String code = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[1]")).Text;
+            String typeCode = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[2]")).Text;
+            String description = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[3]")).Text;
+            String price = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[4]")).Text;
+
+            Assert.That(code == "JUNE2024", "Code value does not match");
+            Assert.That(typeCode == "T", "TypeCode value does not match");
+            Assert.That(description == "Business Analyst", "Description value does not match");
+            Assert.That(price.Contains("200"), "Price value does not match");
+        }
+
+        [Test, Order(3)]
+        public void deleteTMRecordTest() {
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[4]/td[5]/a[2]")).Click();
+            driver.SwitchTo().Alert().Accept();
+
+            // Assertion
+            // Thread.Sleep(3000);
+            driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
+            String code = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[1]")).Text;
+            String typeCode = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[2]")).Text;
+            String description = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[3]")).Text;
+            String price = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[4]")).Text;
+
+            Assert.That(code != "JUNE2024", "Code value does not match");
+            Assert.That(typeCode != "T", "TypeCode value does not match");
+            Assert.That(description != "Business Analyst", "Description value does not match");
+            Assert.That(!price.Contains("200"), "Price value does not match");
+        }
     }
 }
