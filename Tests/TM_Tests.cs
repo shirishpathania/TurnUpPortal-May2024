@@ -66,18 +66,42 @@ namespace TurnUpPortal_May2024.Tests
             // Assertion
             // Thread.Sleep(3000);
             // Explicit Wait
-            wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")));
             driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
-            String code = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[1]")).Text;
-            String typeCode = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[2]")).Text;
-            String description = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[3]")).Text;
-            String price = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[4]")).Text;
 
-            Assert.That(code == "MAY2024", "Code value does not match");
-            Assert.That(typeCode == "T", "TypeCode value does not match");
-            Assert.That(description == "Test Analyst", "Description value does not match");
-            Assert.That(price.Contains("100"), "Price value does not match");
+            // Get Time and Material Record page count
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/ul/li[3]/span")));
+            int tmRecordPageCount = Int32.Parse(driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/ul/li[3]/span")).Text);
+            
+            // Go Back to first Page
+            driver.FindElement(By.XPath("//span[@class='k-icon k-i-seek-w']")).Click();
+            Thread.Sleep(3000);
 
+            for (int i = 1; i <= tmRecordPageCount; i++)
+            {
+                // Get Time and Material Records per page count
+                int tmRecordsPerPageCount = Int32.Parse(driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/span[1]/span/span/span[1]")).Text);
+                
+                for (int j = 1; j <= tmRecordsPerPageCount; j++)
+                {
+                    String code = driver.FindElement(By.XPath("//tr["+j+"]/td[1]")).Text;
+                    String typeCode = driver.FindElement(By.XPath("//tr["+j+"]/td[2]")).Text;
+                    String description = driver.FindElement(By.XPath("//tr[" + j + "]/td[3]")).Text;
+                    String price = driver.FindElement(By.XPath("//tr[" + j + "]/td[4]")).Text;
+
+                    if (code == "MAY2024")
+                    {
+                        Assert.That(code == "MAY2024", "Code value does not match");
+                        Assert.That(typeCode == "T", "TypeCode value does not match");
+                        Assert.That(description == "Test Analyst", "Description value does not match");
+                        Assert.That(price.Contains("100"), "Price value does not match");
+                        i = tmRecordPageCount;
+                        break;
+                    }
+                }
+                // Click on next page
+                driver.FindElement(By.XPath("//span[@class='k-icon k-i-arrow-e']")).Click();
+            }
         }
 
         [Test, Order(2)]
