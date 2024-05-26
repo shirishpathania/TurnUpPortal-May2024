@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace TurnUpPortal_May2024.Tests
         {
             // Prerequisites
             driver = new ChromeDriver();
+            // Explicit Wait
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             // Implicit Wait
             // driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
@@ -63,7 +65,8 @@ namespace TurnUpPortal_May2024.Tests
 
             // Assertion
             // Thread.Sleep(3000);
-            //wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")));
+            // Explicit Wait
+            wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")));
             driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[4]/a[4]/span")).Click();
             String code = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[1]")).Text;
             String typeCode = driver.FindElement(By.XPath("//*[@id=\"tmsGrid\"]/div[3]/table/tbody/tr[3]/td[2]")).Text;
